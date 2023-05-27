@@ -1,3 +1,4 @@
+import { resolveModuleName } from 'typescript';
 import { getWeatherByCity, searchCities } from './weatherAPI';
 
 /**
@@ -76,10 +77,13 @@ export function showForecast(forecastList) {
 /**
  * Recebe um objeto com as informações de uma cidade e retorna um elemento HTML
  */
-export function createCityElement(cityInfo) {
-  const { name, country, temp, condition, icon /* , url */ } = cityInfo;
+export async function createCityElement(cityInfo) {
+  console.log(cityInfo);
+  const { name, country, weather, url } = cityInfo;
+  const { icon, condition, temp } = weather;
 
   const cityElement = createElement('li', 'city');
+  const ul = document.getElementById('cities');
 
   const headingElement = createElement('div', 'city-heading');
   const nameElement = createElement('h2', 'city-name', name);
@@ -104,7 +108,9 @@ export function createCityElement(cityInfo) {
   cityElement.appendChild(headingElement);
   cityElement.appendChild(infoContainer);
 
-  return cityElement;
+  ul.appendChild(cityElement);
+
+  return ul;
 }
 
 /**
@@ -116,11 +122,22 @@ export async function handleSearch(event) {
 
   const searchInput = document.getElementById('search-input');
   const searchValue = searchInput.value;
-  const getCity = await searchCities(searchValue);
-  console.log(getCity);
+  const cities = await searchCities(searchValue);
   const result = await Promise.all(
-    getCity.map(async (city) => getWeatherByCity(city.url)),
+    cities.map(async (city) => {
+      city.weather = await getWeatherByCity(city.url);
+      return city;
+    }),
   );
-  // console.log(result);
-  return result;
+  const exhibitSearch = result.forEach(createCityElement);
+  return exhibitSearch;
 }
+
+// console.log(createCityElement({
+//   name: 'Curitiba',
+//   country: 'Brazil',
+//   temp: 22.0, // temperatura em graus celsius
+//   condition: 'Parcialmente nublado"',
+//   icon: '//cdn.weatherapi.com/weather/64x64/day/116.png',
+//   url: 'curitiba-parana-brazil',
+// }));
