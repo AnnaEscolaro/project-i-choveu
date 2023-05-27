@@ -1,4 +1,4 @@
-import { resolveModuleName } from 'typescript';
+// import { resolveModuleName } from 'typescript';
 import { getWeatherByCity, searchCities } from './weatherAPI';
 
 /**
@@ -78,8 +78,7 @@ export function showForecast(forecastList) {
  * Recebe um objeto com as informações de uma cidade e retorna um elemento HTML
  */
 export async function createCityElement(cityInfo) {
-  console.log(cityInfo);
-  const { name, country, weather, url } = cityInfo;
+  const { name, country, weather } = cityInfo;
   const { icon, condition, temp } = weather;
 
   const cityElement = createElement('li', 'city');
@@ -132,12 +131,3 @@ export async function handleSearch(event) {
   const exhibitSearch = result.forEach(createCityElement);
   return exhibitSearch;
 }
-
-// console.log(createCityElement({
-//   name: 'Curitiba',
-//   country: 'Brazil',
-//   temp: 22.0, // temperatura em graus celsius
-//   condition: 'Parcialmente nublado"',
-//   icon: '//cdn.weatherapi.com/weather/64x64/day/116.png',
-//   url: 'curitiba-parana-brazil',
-// }));
