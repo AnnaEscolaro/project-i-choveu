@@ -1,6 +1,8 @@
 // import { resolveModuleName } from 'typescript';
 import { getWeatherByCity, searchCities } from './weatherAPI';
 
+const TOKEN = import.meta.env.VITE_TOKEN;
+
 /**
  * Cria um elemento HTML com as informações passadas
  */
@@ -15,7 +17,9 @@ function createElement(tagName, className, textContent = '') {
  * Recebe as informações de uma previsão e retorna um elemento HTML
  */
 function createForecast(forecast) {
-  const { date, maxTemp, minTemp, condition, icon } = forecast;
+  const { date, day } = forecast;
+  const { maxtemp_c: maxTemp, mintemp_c: minTemp, condition } = day;
+  const { icon, text: conditionText } = condition;
 
   const weekday = new Date(date);
   weekday.setDate(weekday.getDate() + 1);
@@ -34,7 +38,7 @@ function createForecast(forecast) {
   tempContainer.appendChild(maxTempElement);
   tempContainer.appendChild(minTempElement);
 
-  const conditionElement = createElement('p', 'forecast-condition', condition);
+  const conditionElement = createElement('p', 'forecast-condition', conditionText);
   const iconElement = createElement('img', 'forecast-icon');
   iconElement.src = icon.replace('64x64', '128x128');
 
@@ -62,11 +66,14 @@ function clearChildrenById(elementId) {
 /**
  * Recebe uma lista de previsões e as exibe na tela dentro de um modal
  */
-export function showForecast(forecastList) {
+export async function showForecast(cityInfo) {
+  const result = await fetch(`http://api.weatherapi.com/v1/forecast.json?key=${TOKEN}&q=${cityInfo.url}&days=7`);
+  const data = await result.json();
+
   const forecastContainer = document.getElementById('forecast-container');
   const weekdayContainer = document.getElementById('weekdays');
   clearChildrenById('weekdays');
-  forecastList.forEach((forecast) => {
+  data.forecast.forecastday.forEach((forecast) => {
     const weekdayElement = createForecast(forecast);
     weekdayContainer.appendChild(weekdayElement);
   });
@@ -104,8 +111,12 @@ export async function createCityElement(cityInfo) {
   infoContainer.appendChild(tempContainer);
   infoContainer.appendChild(iconElement);
 
+  const button = createElement('button', 'city-forecast-button', 'Ver previsão');
+  button.addEventListener('click', () => showForecast(cityInfo));
+
   cityElement.appendChild(headingElement);
   cityElement.appendChild(infoContainer);
+  cityElement.appendChild(button);
 
   ul.appendChild(cityElement);
 

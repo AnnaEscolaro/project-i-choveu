@@ -7,7 +7,6 @@ export async function searchCities(term) {
     window.alert('Nenhuma cidade encontrada');
     return data;
   }
-  console.log(data);
   return data;
 }
 
